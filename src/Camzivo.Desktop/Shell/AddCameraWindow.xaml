@@ -1,0 +1,130 @@
+<Window x:Class="Camzivo.Desktop.Shell.AddCameraWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add camera"
+        Width="560" Height="780"
+        MinWidth="500" MinHeight="620"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource Brush.Graphite}"
+        FontFamily="{StaticResource Font.Ui}"
+        UseLayoutRounding="True">
+
+    <DockPanel Margin="20" Background="{DynamicResource Brush.Graphite}">
+
+        <!-- The advanced section makes the form taller than the fixed-height window. Without this, the connection-test
+             panel below is squeezed to a sliver exactly when the operator needs to read its result. -->
+        <ScrollViewer DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      MaxHeight="350">
+        <StackPanel>
+            <TextBlock Text="Add camera" Style="{StaticResource SectionTitle}" />
+            <TextBlock Style="{StaticResource Meta}" Margin="0,6,0,16" TextWrapping="Wrap"
+                       Text="Enter an IP address for an ONVIF camera or NVR, or a full rtsp:// URL. Camzivo tests the device before saving and will not register a camera it could not actually decode." />
+
+            <TextBlock Text="NAME" Style="{StaticResource Micro}" Margin="0,0,0,4" />
+            <TextBox x:Name="NameBox" Style="{StaticResource SearchBox}" Text="Camera" />
+
+            <TextBlock Text="ADDRESS" Style="{StaticResource Micro}" Margin="0,12,0,4" />
+            <TextBox x:Name="AddressBox" Style="{StaticResource SearchBox}"
+                     TextChanged="AddressBox_TextChanged"
+                     ToolTip="192.168.1.108, camera.example.local, or rtsp://192.168.1.108:554/cam/realmonitor?channel=1&amp;subtype=0" />
+            <TextBlock Style="{StaticResource Meta}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Examples: 192.168.1.108  ·  rtsp://192.168.1.108:554/cam/realmonitor?channel=1&amp;subtype=0" />
+
+            <Grid Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="USERNAME" Style="{StaticResource Micro}" Margin="0,0,0,4" />
+                    <TextBox x:Name="UserBox" Style="{StaticResource SearchBox}" Text="admin" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="PASSWORD" Style="{StaticResource Micro}" Margin="0,0,0,4" />
+                    <PasswordBox x:Name="PasswordBox" Height="30" Padding="8,0" VerticalContentAlignment="Center"
+                                 Background="{DynamicResource Brush.Graphite}" Foreground="{DynamicResource Brush.TextPrimary}"
+                                 BorderBrush="{DynamicResource Brush.Border}" />
+                </StackPanel>
+            </Grid>
+
+            <CheckBox x:Name="NvrCheck" Content="This device is a recorder (NVR) with several channels"
+                      Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,14,0,0"
+                      Checked="NvrCheck_Changed" Unchecked="NvrCheck_Changed" />
+
+            <Expander x:Name="AdvancedSettings" Header="Advanced connection settings" Margin="0,10,0,0"
+                      Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11">
+                <StackPanel Margin="0,8,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="ONVIF / HTTP PORT" Style="{StaticResource Micro}" Margin="0,0,0,4" />
+                            <TextBox x:Name="OnvifPortBox" Style="{StaticResource SearchBox}" Text="80"
+                                     ToolTip="Dahua NVR default 80; HTTPS is usually 443" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="RTSP PORT" Style="{StaticResource Micro}" Margin="0,0,0,4" />
+                            <TextBox x:Name="RtspPortBox" Style="{StaticResource SearchBox}" Text="554"
+                                     ToolTip="Dahua NVR default 554" />
+                        </StackPanel>
+                    </Grid>
+                    <CheckBox x:Name="TlsCheck" Content="Use HTTPS for ONVIF"
+                              Foreground="{DynamicResource Brush.TextPrimary}" Margin="0,10,0,0" />
+                </StackPanel>
+            </Expander>
+
+        </StackPanel>
+        </ScrollViewer>
+
+        <!-- Outside the scroll area: the primary action must stay reachable while the form above is scrolled. -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,16,0,0">
+            <Button Content="Test connection" Style="{StaticResource PrimaryButton}" Height="32"
+                    Click="Test_Click" />
+            <Button Content="Scan network" Style="{StaticResource SecondaryButton}" Height="32" Margin="8,0,0,0"
+                    Click="Scan_Click" />
+            <TextBlock x:Name="ElapsedText" Style="{StaticResource Mono}" VerticalAlignment="Center" Margin="12,0,0,0" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Brush.Critical}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel" Style="{StaticResource SecondaryButton}" Height="32" MinWidth="90"
+                        Click="Cancel_Click" />
+                <Button x:Name="SaveButton" Content="Save camera" Style="{StaticResource PrimaryButton}" Height="32"
+                        MinWidth="120" Margin="8,0,0,0" IsEnabled="False" Click="Save_Click" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- The result panel gets a floor of its own: with the NVR checkbox and the advanced section open, the form
+             used to squeeze these rows into a sliver, so the operator saw a one-word summary instead of the stage
+             that failed. -->
+        <Border Style="{StaticResource Panel}" Padding="12" Margin="0,16,0,0" MinHeight="150">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <StackPanel x:Name="Stages">
+                        <TextBlock Text="CONNECTION TEST" Style="{StaticResource Micro}" Margin="0,0,0,8" />
+                        <TextBlock Text="Nothing tested yet. Enter the address and press Test connection." Style="{StaticResource Meta}" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="ChannelPanel" Visibility="Collapsed" Margin="0,14,0,0">
+                        <TextBlock Text="CHANNELS FOUND" Style="{StaticResource Micro}" Margin="0,0,0,6" />
+                        <TextBlock x:Name="ChannelHint" Style="{StaticResource Meta}" TextWrapping="Wrap" Margin="0,0,0,6" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button Content="Select all" Style="{StaticResource SecondaryButton}" Height="26" Click="SelectAll_Click" />
+                            <Button Content="Select none" Style="{StaticResource SecondaryButton}" Height="26" Margin="8,0,0,0" Click="SelectNone_Click" />
+                        </StackPanel>
+                        <StackPanel x:Name="ChannelList" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>

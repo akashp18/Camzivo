@@ -1,0 +1,24 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+
+# Vendored .NET SDK restored by the bootstrap scripts (1.4 GB)
+tools/
+
+# Generated run output: screenshots, probe logs, benchmark artifacts
+artifacts/
+
+# Research material: a nested clone of an upstream project with its own .git
+research/
+
+# Freebuff workspace metadata
+.freebuff/
+
+# Local logs and the SQLite store
+*.log
+*.db
+*.db-wal
+*.db-shm

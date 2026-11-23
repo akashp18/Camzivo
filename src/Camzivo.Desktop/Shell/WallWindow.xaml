@@ -1,0 +1,27 @@
+<Window x:Class="Camzivo.Desktop.Shell.WallWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:Camzivo.Desktop.Views"
+        Title="Camzivo · wall"
+        WindowStyle="None" ResizeMode="NoResize" Background="#05070A"
+        ShowInTaskbar="True" UseLayoutRounding="True" SnapsToDevicePixels="True"
+        FontFamily="{StaticResource Font.Ui}">
+
+    <Grid>
+        <views:LiveWallView Margin="4" />
+
+        <Button Style="{StaticResource ChromeButton}" Width="34" Height="30" HorizontalAlignment="Right"
+                VerticalAlignment="Top" Margin="0,8,8,0" Click="Close_Click"
+                Background="#B30B0F14" Foreground="#E9EFF5"
+                ToolTip="Close this display window (Esc)" AutomationProperties.Name="Close display window">
+            <Path Style="{StaticResource IconPath}" Width="10" Height="10" Fill="#E9EFF5"
+                  Data="{StaticResource Icon.Close}" />
+        </Button>
+
+        <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12"
+                Background="#B30B0F14" CornerRadius="4" Padding="8,4" IsHitTestVisible="False">
+            <TextBlock Text="Wall on this display · Esc closes · double-click toggles fullscreen"
+                       Style="{StaticResource Micro}" Foreground="#AEB9C4" />
+        </Border>
+    </Grid>
+</Window>

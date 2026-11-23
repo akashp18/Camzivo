@@ -1,0 +1,150 @@
+<UserControl x:Class="Camzivo.Desktop.Views.EventsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Camzivo.Desktop.Controls"
+             FontFamily="{StaticResource Font.Ui}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Style="{StaticResource Toolbar}" Margin="0,0,0,10">
+            <WrapPanel Orientation="Horizontal">
+                <Grid Width="220" Margin="0,0,8,0">
+                    <TextBox Style="{StaticResource SearchBox}"
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.Name="Search events"
+                             ToolTip="Filter by camera, kind or description" />
+                    <TextBlock Text="Search events" Style="{StaticResource Meta}" Margin="10,0,0,0"
+                               VerticalAlignment="Center" IsHitTestVisible="False"
+                               Visibility="{Binding SearchText, Converter={StaticResource EmptyToVis}, ConverterParameter=invert}" />
+                    <Path Style="{StaticResource IconPath}" Width="12" Height="12" HorizontalAlignment="Right"
+                          Margin="0,0,10,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                          Fill="{DynamicResource Brush.TextMuted}" Data="{StaticResource Icon.Search}" />
+                </Grid>
+                <ComboBox Width="180" ItemsSource="{Binding CameraChoices}" SelectedItem="{Binding SelectedCamera}"
+                          DisplayMemberPath="Name" Margin="0,0,8,0" AutomationProperties.Name="Camera filter" />
+                <ComboBox Width="160" ItemsSource="{Binding SeverityChoices}" SelectedItem="{Binding SelectedSeverity}"
+                          DisplayMemberPath="Name" Margin="0,0,8,0" AutomationProperties.Name="Severity filter" />
+                <CheckBox Content="Date range" VerticalAlignment="Center" Margin="0,0,8,0"
+                          IsChecked="{Binding IsDateFilterEnabled}" />
+                <controls:DateField SelectedDate="{Binding FromDate, Mode=TwoWay}" Margin="0,0,6,0"
+                                    Visibility="{Binding IsDateFilterEnabled, Converter={StaticResource BoolToVis}}" />
+                <controls:DateField SelectedDate="{Binding ToDate, Mode=TwoWay}" Margin="0,0,8,0"
+                                    Visibility="{Binding IsDateFilterEnabled, Converter={StaticResource BoolToVis}}" />
+                <Button Content="Refresh" Style="{StaticResource SecondaryButton}" Command="{Binding RefreshCommand}" Margin="0,0,6,0" />
+                <Button Content="Clear filters" Style="{StaticResource GhostButton}" Command="{Binding ClearFiltersCommand}" />
+            </WrapPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="2,0,2,8">
+            <TextBlock Text="{Binding Summary}" Style="{StaticResource Strong}" />
+            <TextBlock Text="{Binding RetentionNote}" Style="{StaticResource Meta}" HorizontalAlignment="Right"
+                       TextTrimming="CharacterEllipsis" MaxWidth="620" ToolTip="{Binding RetentionNote}" />
+        </Grid>
+
+        <Border Grid.Row="2" Style="{StaticResource Panel}" Padding="0" VerticalAlignment="Stretch">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Style="{StaticResource TableHeader}">
+                    <Grid Margin="12,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="84" />
+                            <ColumnDefinition Width="96" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="86" />
+                            <ColumnDefinition Width="3*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="DATE · TIME" Style="{StaticResource TableHeaderText}" />
+                        <TextBlock Grid.Column="1" Text="SEVERITY" Style="{StaticResource TableHeaderText}" />
+                        <TextBlock Grid.Column="2" Text="CAMERA" Style="{StaticResource TableHeaderText}" />
+                        <TextBlock Grid.Column="3" Text="KIND" Style="{StaticResource TableHeaderText}" />
+                        <TextBlock Grid.Column="4" Text="EVENT" Style="{StaticResource TableHeaderText}" />
+                    </Grid>
+                </Border>
+
+                <Grid>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Rows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource TableRow}" Padding="0,7" MinHeight="46"
+                                            AutomationProperties.Name="{Binding AutomationName}">
+                                        <Grid Margin="12,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="84" />
+                                                <ColumnDefinition Width="96" />
+                                                <ColumnDefinition Width="2*" />
+                                                <ColumnDefinition Width="86" />
+                                                <ColumnDefinition Width="3*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TimeText}" Style="{StaticResource Mono}" />
+                                                <TextBlock Text="{Binding DateText}" Style="{StaticResource Micro}" />
+                                            </StackPanel>
+
+                                            <Border Grid.Column="1" Style="{StaticResource Chip}" HorizontalAlignment="Left"
+                                                    Background="{Binding Severity, Converter={StaticResource SeverityBrush}}">
+                                                <TextBlock Text="{Binding SeverityLabel}" Style="{StaticResource Micro}" Foreground="#FFFFFF" />
+                                            </Border>
+
+                                            <TextBlock Grid.Column="2" Text="{Binding CameraName}" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+
+                                            <TextBlock Grid.Column="3" Text="{Binding KindLabel}" Style="{StaticResource Meta}"
+                                                       VerticalAlignment="Center" />
+
+                                            <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" ToolTip="{Binding ToolTip}" />
+                                                <TextBlock Text="{Binding Detail}" Style="{StaticResource Meta}"
+                                                           TextTrimming="CharacterEllipsis" Margin="0,1,0,0"
+                                                           Visibility="{Binding Detail, Converter={StaticResource EmptyToVis}, ConverterParameter=invert}"
+                                                           ToolTip="{Binding Detail}" />
+                                            </StackPanel>
+
+                                            <Button Grid.Column="5" Style="{StaticResource GhostButton}" Height="26" Padding="8,0"
+                                                    Command="{Binding DataContext.OpenPlaybackCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Visibility="{Binding CanOpenPlayback, Converter={StaticResource BoolToVis}}"
+                                                    ToolTip="Open the recording around this event"
+                                                    AutomationProperties.Name="Open in playback">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Path Style="{StaticResource IconPath}" Width="10" Height="10"
+                                                          Fill="{DynamicResource Brush.AccentText}" Data="{StaticResource Icon.Playback}" />
+                                                    <TextBlock Text="Playback" FontSize="11.5" Margin="6,0,0,0" />
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasRows}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Path Style="{StaticResource IconPath}" Width="26" Height="26" HorizontalAlignment="Center"
+                              Fill="{DynamicResource Brush.TextMuted}" Data="{StaticResource Icon.Events}" />
+                        <TextBlock Text="No events to show" Style="{StaticResource SectionTitle}" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                        <TextBlock Style="{StaticResource Meta}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,6,0,0"
+                                   Text="Stream interruptions, reconnections, authentication failures and exports are recorded here as they happen." />
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

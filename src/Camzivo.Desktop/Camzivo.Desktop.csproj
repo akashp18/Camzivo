@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Camzivo.Desktop</RootNamespace>
+    <AssemblyName>Camzivo.Desktop</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Camzivo.Core/Camzivo.Core.csproj" />
+    <ProjectReference Include="../Camzivo.Data/Camzivo.Data.csproj" />
+  </ItemGroup>
+
+</Project>

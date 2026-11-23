@@ -1,0 +1,344 @@
+<UserControl x:Class="Camzivo.Desktop.Views.PlaybackView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Camzivo.Desktop.Controls"
+             FontFamily="{StaticResource Font.Ui}">
+
+    <Grid Margin="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="304" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ===================== Search ===================== -->
+        <Border Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource Toolbar}" Margin="0,0,0,12">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Camera" Style="{StaticResource Micro}" VerticalAlignment="Center" Margin="4,0,8,0" />
+                    <Grid Width="230">
+                        <ComboBox ItemsSource="{Binding Cameras}" SelectedItem="{Binding SelectedCamera}"
+                                  DisplayMemberPath="Name" AutomationProperties.Name="Camera"
+                                  ToolTip="Camera or recorder channel to investigate" />
+                        <TextBlock Text="Select a camera" Style="{StaticResource Meta}" Margin="10,0,0,0"
+                                   VerticalAlignment="Center" IsHitTestVisible="False"
+                                   Visibility="{Binding SelectedCamera, Converter={StaticResource NullToVis}, ConverterParameter=invert}" />
+                    </Grid>
+
+                    <TextBlock Text="Date" Style="{StaticResource Micro}" VerticalAlignment="Center" Margin="16,0,8,0" />
+                    <controls:DateField SelectedDate="{Binding SelectedDate, Mode=TwoWay}" />
+
+                    <Button Content="Find recordings" Style="{StaticResource PrimaryButton}" Margin="16,0,0,0"
+                            Command="{Binding SearchCommand}" AutomationProperties.Name="Find recordings" />
+
+                    <TextBlock Text="{Binding AvailabilityLabel}" Style="{StaticResource Meta}" VerticalAlignment="Center"
+                               Margin="16,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="420" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Border Style="{StaticResource Chip}" Background="{DynamicResource Brush.AccentSoft}">
+                        <TextBlock Text="ONVIF PROFILE G" Style="{StaticResource Micro}"
+                                   Foreground="{DynamicResource Brush.AccentText}" />
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===================== Video viewport ===================== -->
+        <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource Brush.VideoSurface}"
+                BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8"
+                MinHeight="280" ClipToBounds="True">
+            <Grid>
+                <TextBlock Text="{Binding FrameHint}" Style="{StaticResource Meta}"
+                           Foreground="{DynamicResource Brush.VideoTextMuted}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{Binding HasFrame, Converter={StaticResource InverseBoolToVis}}" />
+
+                <Image Source="{Binding Frame}" Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+
+                <Border Background="{DynamicResource Brush.TileOverlay}" CornerRadius="5" Padding="10,5"
+                        HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12">
+                    <TextBlock Text="{Binding PositionText}" Style="{StaticResource Timestamp}" Foreground="#F4F7FA" />
+                </Border>
+
+                <Border Style="{StaticResource Chip}" Background="{DynamicResource Brush.TileOverlay}"
+                        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="12" Padding="8,4">
+                    <TextBlock Text="{Binding StatusText}" Style="{StaticResource Micro}" Foreground="#E6EDF5"
+                               TextTrimming="CharacterEllipsis" MaxWidth="300" />
+                </Border>
+
+                <TextBlock Text="{Binding SelectedSegmentText}" Style="{StaticResource Meta}" Foreground="#AEB9C4"
+                           HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12" />
+            </Grid>
+        </Border>
+
+        <!-- ===================== Timeline ===================== -->
+        <Border Grid.Row="2" Grid.Column="0" Style="{StaticResource Panel}" Margin="0,12,0,0" Padding="12,10">
+            <StackPanel>
+                <Grid Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SelectedDateLabel}" Style="{StaticResource Strong}" FontSize="12.5" />
+                        <Border Style="{StaticResource Hairline}" Width="1" Height="14" Margin="10,0" />
+                        <TextBlock Text="{Binding WindowLabel}" Style="{StaticResource Mono}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Style="{StaticResource IconButton}" Width="28" Height="26" Command="{Binding MoveBackCommand}"
+                                ToolTip="Move the window back" AutomationProperties.Name="Move window back">
+                            <Path Style="{StaticResource IconPath}" Width="10" Height="10"
+                                  Fill="{DynamicResource Brush.TextSecondary}" Data="{StaticResource Icon.ChevronLeft}" />
+                        </Button>
+                        <Button Content="−" Style="{StaticResource GhostButton}" Width="28" Height="26" Padding="0"
+                                Command="{Binding ZoomOutCommand}" ToolTip="Zoom out (wider window)" Margin="2,0,0,0" />
+                        <TextBlock Text="{Binding ZoomLabel}" Style="{StaticResource Meta}" VerticalAlignment="Center"
+                                   Width="70" TextAlignment="Center" />
+                        <Button Content="+" Style="{StaticResource GhostButton}" Width="28" Height="26" Padding="0"
+                                Command="{Binding ZoomInCommand}" ToolTip="Zoom in (narrower window)" />
+                        <Button Style="{StaticResource IconButton}" Width="28" Height="26" Command="{Binding MoveForwardCommand}"
+                                Margin="2,0,0,0" ToolTip="Move the window forward" AutomationProperties.Name="Move window forward">
+                            <Path Style="{StaticResource IconPath}" Width="10" Height="10"
+                                  Fill="{DynamicResource Brush.TextSecondary}" Data="{StaticResource Icon.ChevronRight}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <controls:TimelineControl Height="94"
+                                          Bars="{Binding Blocks}"
+                                          Ticks="{Binding Ticks}"
+                                          PlayheadFraction="{Binding PlayheadFraction}"
+                                          SelectedToken="{Binding SelectedToken}"
+                                          SelectCommand="{Binding TimelineSelectCommand}"
+                                          EmptyText="{Binding EmptyTimelineText}"
+                                          TrackBrush="{DynamicResource Brush.TimelineTrack}"
+                                          SegmentBrush="{DynamicResource Brush.TimelineSegment}"
+                                          SegmentHoverBrush="{DynamicResource Brush.TimelineSegmentHover}"
+                                          SegmentSelectedBrush="{DynamicResource Brush.TimelineSegmentSelected}"
+                                          PlayheadBrush="{DynamicResource Brush.TimelinePlayhead}"
+                                          TickBrush="{DynamicResource Brush.TimelineTick}"
+                                          LabelBrush="{DynamicResource Brush.TextSecondary}"
+                                          EmptyBrush="{DynamicResource Brush.TextMuted}"
+                                          AccentBrush="{DynamicResource Brush.Accent}"
+                                          AutomationProperties.Name="Recording timeline"
+                                          AutomationProperties.HelpText="Click a recording to select it, or click while playing to seek. Left and right arrows move the playhead." />
+
+                <Grid Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding PlayCommand}"
+                                ToolTip="Play selection" AutomationProperties.Name="Play">
+                            <Path Style="{StaticResource IconPath}" Width="11" Height="11"
+                                  Fill="{DynamicResource Brush.TextPrimary}" Data="{StaticResource Icon.Play}" />
+                        </Button>
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding PauseCommand}" Margin="4,0,0,0"
+                                ToolTip="Pause" AutomationProperties.Name="Pause">
+                            <Path Style="{StaticResource IconPath}" Width="11" Height="11"
+                                  Fill="{DynamicResource Brush.TextPrimary}" Data="{StaticResource Icon.Pause}" />
+                        </Button>
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding ResumeCommand}" Margin="4,0,0,0"
+                                ToolTip="Resume" AutomationProperties.Name="Resume">
+                            <Path Style="{StaticResource IconPath}" Width="12" Height="12"
+                                  Fill="{DynamicResource Brush.TextPrimary}" Data="{StaticResource Icon.Play}" />
+                        </Button>
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding StopCommand}" Margin="4,0,0,0"
+                                ToolTip="Stop and release the replay session" AutomationProperties.Name="Stop">
+                            <Path Style="{StaticResource IconPath}" Width="10" Height="10"
+                                  Fill="{DynamicResource Brush.TextPrimary}" Data="{StaticResource Icon.Stop}" />
+                        </Button>
+
+                        <Border Style="{StaticResource Hairline}" Width="1" Height="18" Margin="10,0" />
+
+                        <TextBlock Text="SPEED" Style="{StaticResource Micro}" VerticalAlignment="Center" Margin="0,0,4,0" />
+                        <ItemsControl ItemsSource="{Binding Speeds}" VerticalAlignment="Center"
+                                      AutomationProperties.Name="Playback speed"
+                                      AutomationProperties.HelpText="1×, 2×, 4×, 6×, 8× and 16×. The measured speed is shown beside the timestamp.">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding DataContext.SetRateCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}" Content="{Binding Label}"
+                                            ToolTip="{Binding Label, StringFormat=Play at {0}}"
+                                            AutomationProperties.Name="{Binding Label, StringFormat=Playback speed {0}}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource SpeedButton}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource Brush.Selected}" />
+                                                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}" />
+                                                        <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border Style="{StaticResource Hairline}" Width="1" Height="18" Margin="10,0" />
+
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding JumpStartCommand}"
+                                ToolTip="Jump to the start of the recording" AutomationProperties.Name="Jump to start">
+                            <Path Style="{StaticResource IconPath}" Width="12" Height="12"
+                                  Fill="{DynamicResource Brush.TextSecondary}" Data="{StaticResource Icon.SkipStart}" />
+                        </Button>
+                        <Button Content="−30 s" Style="{StaticResource GhostButton}" Height="30" Padding="8,0" Margin="3,0,0,0"
+                                Command="{Binding SeekBackCommand}" CommandParameter="30" ToolTip="Back 30 seconds" />
+                        <Button Content="+30 s" Style="{StaticResource GhostButton}" Height="30" Padding="8,0" Margin="3,0,0,0"
+                                Command="{Binding SeekForwardCommand}" CommandParameter="30" ToolTip="Forward 30 seconds" />
+                        <Button Style="{StaticResource TransportButton}" Command="{Binding JumpEndCommand}" Margin="3,0,0,0"
+                                ToolTip="Jump to the end of the recording" AutomationProperties.Name="Jump to end">
+                            <Path Style="{StaticResource IconPath}" Width="12" Height="12"
+                                  Fill="{DynamicResource Brush.TextSecondary}" Data="{StaticResource Icon.SkipEnd}" />
+                        </Button>
+
+                        <Border Style="{StaticResource Hairline}" Width="1" Height="18" Margin="10,0" />
+                        <TextBlock Text="{Binding RangeText}" Style="{StaticResource Mono}" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding ActiveSpeedText}" Style="{StaticResource Micro}" VerticalAlignment="Center"
+                                   Margin="0,0,10,0" ToolTip="Requested speed and, once measured, the rate the source is actually delivering." />
+                        <TextBlock Text="{Binding PositionText}" Style="{StaticResource Timestamp}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="{Binding SpeedNotice}" Style="{StaticResource ErrorMessage}" Margin="0,8,0,0"
+                           Visibility="{Binding HasSpeedNotice, Converter={StaticResource BoolToVis}}"
+                           AutomationProperties.LiveSetting="Assertive" />
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="3" Grid.Column="0" Margin="2,8,0,0">
+            <TextBlock Text="{Binding ErrorText}" Style="{StaticResource ErrorMessage}"
+                       Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}" MaxWidth="760" HorizontalAlignment="Left" />
+        </Grid>
+
+        <!-- ===================== Right panel: recording and export ===================== -->
+        <Border Grid.Row="1" Grid.RowSpan="3" Grid.Column="1" Style="{StaticResource Panel}" Margin="12,0,0,0" Padding="14">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="RECORDING" Style="{StaticResource SectionHeader}" />
+                    <TextBlock Text="{Binding RangeText}" Style="{StaticResource Strong}" FontSize="14" />
+                    <TextBlock Text="{Binding SelectedSegmentText}" Style="{StaticResource Meta}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <TextBlock Text="{Binding AvailabilityLabel}" Style="{StaticResource Meta}" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+                    <Border Style="{StaticResource Hairline}" Margin="0,12" />
+
+                    <TextBlock Text="SEGMENTS IN THIS WINDOW" Style="{StaticResource SectionHeader}" />
+                    <ItemsControl ItemsSource="{Binding Blocks}" MaxHeight="132">
+                        <ItemsControl.Template>
+                            <ControlTemplate TargetType="ItemsControl">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource GhostButton}" Height="28" HorizontalContentAlignment="Stretch"
+                                        Padding="8,0" Margin="0,0,0,2"
+                                        Command="{Binding DataContext.SelectBlockCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}" ToolTip="{Binding ToolTip}">
+                                    <Grid>
+                                        <TextBlock Text="{Binding Label}" Style="{StaticResource Mono}" />
+                                        <TextBlock Text="{Binding DurationText}"
+                                                   Style="{StaticResource Micro}" HorizontalAlignment="Right" />
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="No recordings to list.">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Meta}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Blocks.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <Border Style="{StaticResource Hairline}" Margin="0,12" />
+
+                    <TextBlock Text="EXPORT EVIDENCE" Style="{StaticResource SectionHeader}" />
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="FROM" Style="{StaticResource Micro}" Margin="0,0,0,4" />
+                            <TextBox Text="{Binding ExportStartText, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="Export start time" ToolTip="HH:mm:ss inside the recording" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="TO" Style="{StaticResource Micro}" Margin="0,0,0,4" />
+                            <TextBox Text="{Binding ExportEndText, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="Export end time" ToolTip="HH:mm:ss inside the recording" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="{Binding ExportValidation}" Style="{StaticResource ErrorMessage}" Margin="0,0,0,8"
+                               Visibility="{Binding HasExportValidation, Converter={StaticResource BoolToVis}}" />
+
+                    <TextBlock Text="DESTINATION" Style="{StaticResource Micro}" Margin="0,0,0,4" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding ExportDestination, UpdateSourceTrigger=PropertyChanged}"
+                                 AutomationProperties.Name="Export file path" />
+                        <Button Grid.Column="1" Content="Choose…" Style="{StaticResource SecondaryButton}" Height="32"
+                                Margin="6,0,0,0" Command="{Binding ChooseExportFileCommand}" />
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="{Binding ExportButtonText}" Style="{StaticResource PrimaryButton}"
+                                Command="{Binding ExportCommand}" MinWidth="132" />
+                        <Button Content="Cancel" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0"
+                                Command="{Binding CancelExportCommand}"
+                                Visibility="{Binding IsExporting, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+
+                    <ProgressBar Value="{Binding ExportFraction, Mode=OneWay}" Maximum="1" Margin="0,10,0,0" Height="4"
+                                 Visibility="{Binding IsExporting, Converter={StaticResource BoolToVis}}" />
+
+                    <TextBlock Text="{Binding ExportStatus}" Style="{StaticResource Meta}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                    <TextBlock Text="{Binding ExportSummary}" Style="{StaticResource Meta}" TextWrapping="Wrap" Margin="0,4,0,0" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Verify hash" Style="{StaticResource GhostButton}" Height="26" Padding="8,0"
+                                Command="{Binding VerifyLastExportCommand}"
+                                ToolTip="Recompute SHA-256 and compare it with the sidecar" />
+                        <TextBlock Text="{Binding LastExportHash}" Style="{StaticResource Mono}" VerticalAlignment="Center"
+                                   Margin="8,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="170"
+                                   ToolTip="{Binding LastExportHash}" />
+                    </StackPanel>
+
+                    <Border Style="{StaticResource Hairline}" Margin="0,12" />
+
+                    <TextBlock Text="TIMES AND INTEGRITY" Style="{StaticResource SectionHeader}" />
+                    <TextBlock Style="{StaticResource Meta}" TextWrapping="Wrap"
+                               Text="All times are shown in your Windows time zone; recordings are requested from the recorder in absolute UTC. A SHA-256 sidecar and a JSON manifest are written next to every export." />
+                    <TextBlock Text="{Binding ZoneLabel}" Style="{StaticResource Mono}" Margin="0,4,0,0" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

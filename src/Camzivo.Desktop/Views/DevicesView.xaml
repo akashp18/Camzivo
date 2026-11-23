@@ -1,0 +1,197 @@
+<UserControl x:Class="Camzivo.Desktop.Views.DevicesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource Font.Ui}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="{Binding Summary}" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="Cameras and recorders registered on this computer. Passwords are stored with Windows DPAPI."
+                           Style="{StaticResource Meta}" Margin="0,4,0,0" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Border Style="{StaticResource Chip}" Background="{DynamicResource Brush.SuccessSoft}" Margin="0,0,10,0"
+                        ToolTip="Camzivo only performs read-only observation of recorders; PTZ and configuration writes are disabled">
+                    <TextBlock Text="READ-ONLY NVR MODE" Style="{StaticResource Micro}" Foreground="{DynamicResource Brush.Success}" />
+                </Border>
+                <Button Content="Test NVR Connection" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"
+                        Command="{Binding TestNvrConnectionCommand}"
+                        ToolTip="Metadata-only recorder test: no video, no recordings, no settings changed and nothing saved" />
+                <Button Content="Camera health" Style="{StaticResource GhostButton}"
+                        Command="{Binding DataContext.ShowHealthCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        ToolTip="Open the diagnostics page" Margin="0,0,8,0" />
+                <Button Content="Discover" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"
+                        Command="{Binding DiscoverCommand}"
+                        ToolTip="Scan the network for ONVIF cameras and recorders" />
+                <Button Content="Add camera" Style="{StaticResource PrimaryButton}"
+                        Command="{Binding AddCommand}"
+                        ToolTip="Add a camera or recorder by address or rtsp:// URL" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="420" />
+                <ColumnDefinition Width="*" MinWidth="280" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Device table -->
+            <Border Grid.Column="0" Style="{StaticResource Panel}" VerticalAlignment="Top" Padding="0">
+                <StackPanel>
+                    <Grid Margin="12,10,12,8">
+                        <Grid Width="260" HorizontalAlignment="Left">
+                            <TextBox Style="{StaticResource SearchBox}"
+                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.Name="Search devices" ToolTip="Filter by name, address or vendor" />
+                            <TextBlock Text="Search devices" Style="{StaticResource Meta}" Margin="10,0,0,0"
+                                       VerticalAlignment="Center" IsHitTestVisible="False"
+                                       Visibility="{Binding SearchText, Converter={StaticResource EmptyToVis}, ConverterParameter=invert}" />
+                            <Path Style="{StaticResource IconPath}" Width="12" Height="12" HorizontalAlignment="Right"
+                                  Margin="0,0,10,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                                  Fill="{DynamicResource Brush.TextMuted}" Data="{StaticResource Icon.Search}" />
+                        </Grid>
+                    </Grid>
+
+                    <Border Style="{StaticResource TableHeader}">
+                        <Grid Margin="12,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="90" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="NAME" Style="{StaticResource TableHeaderText}" />
+                            <TextBlock Grid.Column="1" Text="TYPE" Style="{StaticResource TableHeaderText}" />
+                            <TextBlock Grid.Column="2" Text="ENDPOINT" Style="{StaticResource TableHeaderText}" />
+                            <TextBlock Grid.Column="3" Text="STATE" Style="{StaticResource TableHeaderText}" />
+                        </Grid>
+                    </Border>
+
+                    <ListBox ItemsSource="{Binding FilteredRows}" SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                             MaxHeight="420" AutomationProperties.Name="Devices">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource TableRow}" Padding="0" MinHeight="40">
+                                    <Grid Margin="12,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*" />
+                                            <ColumnDefinition Width="80" />
+                                            <ColumnDefinition Width="2*" />
+                                            <ColumnDefinition Width="90" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Name}" />
+                                            <TextBlock Text="{Binding CapabilitySummary}" Style="{StaticResource Meta}"
+                                                       TextTrimming="CharacterEllipsis" Margin="0,1,0,0" />
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Style="{StaticResource Chip}" HorizontalAlignment="Left"
+                                                Background="{DynamicResource Brush.NeutralBadge}">
+                                            <TextBlock Text="{Binding KindLabel}" Style="{StaticResource Micro}" />
+                                        </Border>
+                                        <TextBlock Grid.Column="2" Text="{Binding Endpoint}" Style="{StaticResource Mono}"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding Endpoint}" Margin="0,0,8,0" />
+                                        <TextBlock Grid.Column="3" Text="{Binding State}" Style="{StaticResource Micro}"
+                                                   VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Text="No devices to show." Style="{StaticResource Meta}" Margin="12,10,12,12"
+                               Visibility="{Binding FilteredRows.Count, Converter={StaticResource ZeroToVis}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Detail panel -->
+            <Border Grid.Column="1" Style="{StaticResource Panel}" Margin="12,0,0,0" Padding="16" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="{Binding SelectedTitle}" Style="{StaticResource Strong}" FontSize="14" />
+                    <TextBlock Text="{Binding SelectedDetail}" Style="{StaticResource Meta}" TextWrapping="Wrap" Margin="0,4,0,0" />
+
+                    <Border Style="{StaticResource Hairline}" Margin="0,12" />
+
+                    <StackPanel Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="DEVICE" Style="{StaticResource SectionHeader}" />
+                        <WrapPanel>
+                            <Button Content="Rename" Style="{StaticResource SecondaryButton}" Height="30" Margin="0,0,6,6"
+                                    Command="{Binding RenameCommand}" CommandParameter="{Binding SelectedRow}" />
+                            <Button Content="Reconnect" Style="{StaticResource SecondaryButton}" Height="30" Margin="0,0,6,6"
+                                    Command="{Binding ReconnectDeviceCommand}" CommandParameter="{Binding SelectedRow}"
+                                    ToolTip="Restart this device's streams" />
+                            <Button Content="Refresh channels" Style="{StaticResource SecondaryButton}" Height="30" Margin="0,0,6,6"
+                                    Command="{Binding ImportChannelsCommand}" CommandParameter="{Binding SelectedRow}"
+                                    Visibility="{Binding SelectedRow.IsNvr, Converter={StaticResource BoolToVis}}" />
+                            <Button Content="Diagnostics" Style="{StaticResource SecondaryButton}" Height="30" Margin="0,0,6,6"
+                                    Command="{Binding DiagnosticsCommand}" CommandParameter="{Binding SelectedRow}"
+                                    ToolTip="Read-only ONVIF, recording, PTZ and audio compatibility report" />
+                            <Button Content="Remove" Style="{StaticResource DangerButton}" Height="30" Margin="0,0,0,6"
+                                    Command="{Binding RemoveCommand}" CommandParameter="{Binding SelectedRow}" />
+                        </WrapPanel>
+
+                        <Border Style="{StaticResource Hairline}" Margin="0,6,0,12" />
+
+                        <TextBlock Text="CHANNELS" Style="{StaticResource SectionHeader}" />
+                        <ItemsControl ItemsSource="{Binding SelectedChannels}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource TableRow}" Padding="0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="34" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Channel}" Style="{StaticResource Mono}" VerticalAlignment="Center" />
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding Streams}" Style="{StaticResource Meta}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                <Button Content="Reconnect" Style="{StaticResource GhostButton}" Height="24" Padding="7,0"
+                                                        FontSize="11"
+                                                        Command="{Binding DataContext.ReconnectChannelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}" />
+                                                <Button Content="Remove" Style="{StaticResource GhostButton}" Height="24" Padding="7,0"
+                                                        FontSize="11" Margin="4,0,0,0"
+                                                        Command="{Binding DataContext.RemoveChannelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="This device has no imported channels." Style="{StaticResource Meta}"
+                                   Visibility="{Binding SelectedRow.IsNvr, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}">
+                        <Border Background="{DynamicResource Brush.SurfaceHover}" CornerRadius="6" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="Nothing selected" Style="{StaticResource Body}" FontWeight="SemiBold" />
+                                <TextBlock Style="{StaticResource Meta}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                           Text="Select a device to rename it, reconnect it, refresh a recorder's channels or remove it." />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <Border Style="{StaticResource Hairline}" Margin="0,14,0,10" />
+                    <TextBlock Text="ONBOARDING" Style="{StaticResource SectionHeader}" />
+                    <TextBlock Style="{StaticResource Meta}" TextWrapping="Wrap"
+                               Text="Add camera tests the device before saving: reachability, ONVIF, credentials and a playable stream. A failed test persists nothing." />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
